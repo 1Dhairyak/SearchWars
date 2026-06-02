@@ -101,7 +101,7 @@ export default function GamePage() {
       exit="exit"
       className="relative w-full h-screen overflow-hidden bg-game-darker flex flex-col"
       role="main"
-      aria-label="Higher or Lower game"
+      aria-label="SearchWars game"
     >
       {/* ── Top bar ──────────────────────────────────────────────────────────── */}
       <div
@@ -264,3 +264,4 @@ export default function GamePage() {
     </motion.div>
   )
 }
+

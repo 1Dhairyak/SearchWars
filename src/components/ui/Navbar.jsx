@@ -31,7 +31,7 @@ export default function Navbar() {
         }}
         aria-label="Main navigation"
       >
-        <Link to="/" aria-label="Higher Lower — go to home">
+        <Link to="/" aria-label="SearchWars — go to home">
           <Logo size="sm" animate={false} />
         </Link>
 
@@ -142,3 +142,5 @@ export default function Navbar() {
     </motion.header>
   )
 }
+
+

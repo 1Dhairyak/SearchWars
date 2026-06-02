@@ -141,9 +141,10 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 px-4 text-center">
         <p className="text-white/25 text-xs font-mono tracking-widest">
-          HIGHER OR LOWER GAME · PORTFOLIO PROJECT · BUILT WITH REACT + SPRING BOOT
+          SEARCHWARS · GLOBAL SEARCH TRENDS · BUILT WITH REACT + SPRING BOOT
         </p>
       </footer>
     </motion.div>
   )
 }
+

@@ -253,7 +253,7 @@ export default function GameOverPage() {
             onClick={() => {
               soundManager.click()
               if (navigator.share) {
-                navigator.share({ title: 'Higher or Lower', text: `I scored ${score} on Higher or Lower!` })
+                navigator.share({ title: 'SearchWars', text: `I scored ${score} on SearchWars!` })
               }
             }}
           >
@@ -276,3 +276,5 @@ export default function GameOverPage() {
     </motion.div>
   )
 }
+
+

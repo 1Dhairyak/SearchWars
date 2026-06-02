@@ -22,14 +22,14 @@ export default function Logo({ size = 'lg', animate = true }) {
         className={`font-display ${s.higher} tracking-wider`}
         style={{ color: '#00FF87' }}
       >
-        ↑HIGHER
+        ↑SEARCH
       </motion.span>
       <motion.span
         variants={animate ? staggerItem : undefined}
         className={`font-display ${s.lower} tracking-wider`}
         style={{ color: '#FF3C3C' }}
       >
-        LOWER↓
+        WARS↓
       </motion.span>
     </motion.div>
   )
