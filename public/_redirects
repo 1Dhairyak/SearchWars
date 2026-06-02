@@ -1,0 +1,3 @@
+# Netlify _redirects — React Router SPA fallback
+# All routes → index.html with 200 (not 301/302)
+/*    /index.html   200
