@@ -10,6 +10,7 @@ const SIZES = {
 
 export default function Logo({ size = 'lg', animate = true }) {
   const s = SIZES[size] ?? SIZES.lg
+
   return (
     <motion.div
       className="flex flex-col items-center leading-none select-none"
@@ -19,17 +20,24 @@ export default function Logo({ size = 'lg', animate = true }) {
     >
       <motion.span
         variants={animate ? staggerItem : undefined}
-        className={`font-display ${s.higher} tracking-wider`}
-        style={{ color: '#00FF87' }}
+        className={`font-display ${s.higher}`}
+        style={{
+          color: '#00FF87',
+          textShadow: '0 0 25px rgba(0,255,135,0.35)',
+        }}
       >
-        ↑SEARCH
+        SEARCH
       </motion.span>
+
       <motion.span
         variants={animate ? staggerItem : undefined}
-        className={`font-display ${s.lower} tracking-wider`}
-        style={{ color: '#FF3C3C' }}
+        className={`font-display ${s.lower}`}
+        style={{
+          color: '#FF3C3C',
+          textShadow: '0 0 25px rgba(255,60,60,0.35)',
+        }}
       >
-        WARS↓
+        WARS
       </motion.span>
     </motion.div>
   )

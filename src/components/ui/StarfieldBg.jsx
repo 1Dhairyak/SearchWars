@@ -47,7 +47,7 @@ export default function StarfieldBg({ variant = 'dark' }) {
         style={{ background: 'radial-gradient(circle, #FF3C3C, transparent)' }}
       />
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full blur-3xl opacity-3"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full blur-3xl opacity-1"
         style={{ background: 'radial-gradient(ellipse, #00C2FF, transparent)' }}
       />
 
