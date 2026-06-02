@@ -26,13 +26,12 @@ export default function Navbar() {
       <nav
         className="flex items-center justify-between px-6 py-4"
         style={{
-          background: 'linear-gradient(to bottom, rgba(5,10,15,0.95) 0%, transparent 100%)',
-          backdropFilter: 'blur(10px)',
+          background: 'linear-gradient(to bottom, rgba(5,10,15,0.97) 0%, rgba(5,10,15,0.85) 70%, transparent 100%)',
         }}
         aria-label="Main navigation"
       >
         <Link to="/" aria-label="SearchWars — go to home">
-          <Logo size="sm" animate={false} />
+          <Logo size="sm" />
         </Link>
 
         {/* Desktop links */}

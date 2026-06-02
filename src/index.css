@@ -22,13 +22,24 @@
     scroll-behavior: smooth;
   }
 
+  /* clip — not hidden: overflow-x:hidden on body forces overflow-y:auto and clips
+     tall display type (Bebas Neue), which looks like a green bar above the logo. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   body {
     background-color: var(--dark);
     color: #ffffff;
     font-family: 'DM Sans', sans-serif;
-    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    overflow-x: clip;
+    min-height: 100%;
   }
 
   /* FIX A11Y / PERF-REDUCED-MOTION: respect OS preference.
@@ -58,6 +69,29 @@
 @layer utilities {
   .font-display {
     font-family: 'Bebas Neue', Impact, sans-serif;
+  }
+
+  /* Hero/nav wordmark — room for ascenders, glow via filter (not text-shadow). */
+  .logo-wordmark {
+    overflow: visible;
+    padding: 0.35em 0 0.15em;
+    isolation: isolate;
+  }
+
+  .logo-line {
+    line-height: 1.12;
+    letter-spacing: 0.02em;
+  }
+
+  .logo-line-higher {
+    color: #00ff87;
+    padding-top: 0.06em;
+    filter: drop-shadow(0 4px 14px rgba(0, 255, 135, 0.45));
+  }
+
+  .logo-line-lower {
+    color: #ff3c3c;
+    filter: drop-shadow(0 4px 14px rgba(255, 60, 60, 0.45));
   }
 
   .text-glow-green {

@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion'
-import { staggerContainer, staggerItem } from '../../animations/variants'
-
+/**
+ * Logo wordmark — plain markup (no Framer Motion on glyphs).
+ * Motion + text-shadow + body overflow-x clipping caused a green smear above SEARCH.
+ */
 const SIZES = {
   sm: { higher: 'text-4xl', lower: 'text-4xl' },
   md: { higher: 'text-6xl', lower: 'text-6xl' },
@@ -8,37 +9,20 @@ const SIZES = {
   xl: { higher: 'text-9xl', lower: 'text-9xl' },
 }
 
-export default function Logo({ size = 'lg', animate = true }) {
+export default function Logo({ size = 'lg' }) {
   const s = SIZES[size] ?? SIZES.lg
 
   return (
-    <motion.div
-      className="flex flex-col items-center leading-none select-none"
-      variants={animate ? staggerContainer : undefined}
-      initial={animate ? 'initial' : undefined}
-      animate={animate ? 'animate' : undefined}
+    <div
+      className="logo-wordmark flex flex-col items-center select-none"
+      aria-label="Search Wars"
     >
-      <motion.span
-        variants={animate ? staggerItem : undefined}
-        className={`font-display ${s.higher}`}
-        style={{
-          color: '#00FF87',
-          textShadow: '0 0 25px rgba(0,255,135,0.35)',
-        }}
-      >
+      <span className={`logo-line logo-line-higher font-display block ${s.higher}`}>
         SEARCH
-      </motion.span>
-
-      <motion.span
-        variants={animate ? staggerItem : undefined}
-        className={`font-display ${s.lower}`}
-        style={{
-          color: '#FF3C3C',
-          textShadow: '0 0 25px rgba(255,60,60,0.35)',
-        }}
-      >
+      </span>
+      <span className={`logo-line logo-line-lower font-display block ${s.lower}`}>
         WARS
-      </motion.span>
-    </motion.div>
+      </span>
+    </div>
   )
 }

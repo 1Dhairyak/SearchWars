@@ -1,18 +1,17 @@
 import { useReducedMotion } from 'framer-motion'
 
 // ─── Page Transitions ─────────────────────────────────────────────────────────
+// Opacity + y only — filter: blur on large text causes a green smear/ghost above the logo.
 export const pageVariants = {
-  initial: { opacity: 0, y: 20, filter: 'blur(8px)' },
+  initial: { opacity: 0, y: 20 },
   animate: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
     transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
   },
   exit: {
     opacity: 0,
     y: -20,
-    filter: 'blur(8px)',
     transition: { duration: 0.3, ease: [0.55, 0, 1, 0.45] },
   },
 }
@@ -39,6 +38,15 @@ export const staggerItem = {
     opacity: 1,
     y: 0,
     transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+}
+
+/** Fade-only stagger for large display type (avoids motion smear on hero logo). */
+export const logoStaggerItem = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
   },
 }
 
