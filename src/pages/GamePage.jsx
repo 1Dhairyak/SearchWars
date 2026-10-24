@@ -8,7 +8,7 @@
  *  - soundManager.gameOver() fired when phase === 'wrong' before navigation
  *  - soundManager.highScore() fired for new high scores (via GameContext)
  */
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePageVariants, shakeVariant } from '../animations/variants'
@@ -51,6 +51,35 @@ export default function GamePage() {
     return () => clearTimeout(t)
   }, [phase, score, highScore, navigate])
 
+  // Slow first load = backend waking from sleep (Render free tier)
+  const [slowLoad, setSlowLoad] = useState(false)
+  useEffect(() => {
+    setSlowLoad(false)
+    if (phase !== 'loading') return
+    const t = setTimeout(() => setSlowLoad(true), 3000)
+    return () => clearTimeout(t)
+  }, [phase])
+
+  // Error — could not reach backend (checked first: on error there are no items)
+  if (error) {
+    return (
+      <div className="min-h-screen bg-game-darker flex items-center justify-center px-4">
+        <div className="text-center flex flex-col items-center gap-6">
+          <span className="text-5xl" aria-hidden="true">📡</span>
+          <p className="text-game-red font-display text-3xl sm:text-4xl">CONNECTION ERROR</p>
+          <p className="text-white/50 font-body max-w-xs">{error}</p>
+          <button
+            onClick={reset}
+            className="px-8 py-3 rounded-full font-body font-bold text-black"
+            style={{ background: 'linear-gradient(135deg, #00FF87, #00C2FF)' }}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // Loading — waiting for session from backend
   if (phase === 'loading' || !leftItem || !rightItem) {
     return (
@@ -66,28 +95,13 @@ export default function GamePage() {
             }}
           />
           <p className="text-white/40 font-mono text-sm tracking-widest uppercase">
-            Loading game…
+            {slowLoad ? 'Waking up server…' : 'Loading game…'}
           </p>
-        </div>
-      </div>
-    )
-  }
-
-  // Error — could not reach backend
-  if (error) {
-    return (
-      <div className="min-h-screen bg-game-darker flex items-center justify-center px-4">
-        <div className="text-center flex flex-col items-center gap-6">
-          <span className="text-5xl" aria-hidden="true">📡</span>
-          <p className="text-game-red font-display text-3xl sm:text-4xl">CONNECTION ERROR</p>
-          <p className="text-white/50 font-body max-w-xs">{error}</p>
-          <button
-            onClick={reset}
-            className="px-8 py-3 rounded-full font-body font-bold text-black"
-            style={{ background: 'linear-gradient(135deg, #00FF87, #00C2FF)' }}
-          >
-            Try Again
-          </button>
+          {slowLoad && (
+            <p className="text-white/30 font-body text-xs max-w-xs">
+              First load after a while can take up to a minute.
+            </p>
+          )}
         </div>
       </div>
     )

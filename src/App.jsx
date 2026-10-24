@@ -6,6 +6,9 @@ import GamePage from './pages/GamePage'
 import GameOverPage from './pages/GameOverPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import NotFoundPage from './pages/NotFoundPage'
+import { warmUp } from './services/api'
+
+warmUp()
 
 // FIX BUG-01: AnimatePresence needs a changing `key` to fire exit animations.
 // Wrap Routes in a component that calls useLocation() to get that key.

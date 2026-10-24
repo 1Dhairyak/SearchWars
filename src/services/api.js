@@ -41,7 +41,8 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10_000,
+  // Render free tier cold start can take ~30-60s
+  timeout: 60_000,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -148,3 +149,7 @@ export const leaderboardService = {
   getTop: (limit = 10) =>
     withRetry(() => apiClient.get('/leaderboard', { params: { limit } })),
 }
+
+// Wake a sleeping backend as soon as the app loads; errors are irrelevant here.
+export const warmUp = () =>
+  apiClient.get('/leaderboard', { params: { limit: 1 } }).catch(() => {})

@@ -43,8 +43,6 @@ export function useGame() {
       // Handle both wrapped { data: {...} } and unwrapped shapes
       const round = raw?.sessionId ? raw : (raw?.data ?? raw)
 
-      console.log('ROUND:', JSON.stringify(round))
-
       if (!mountedRef.current) return
       if (!round?.sessionId) {
         throw new Error('Invalid response from server')
@@ -59,14 +57,14 @@ export function useGame() {
       setRightItem(right)
       setScore(round.currentScore ?? 0)
       setLastGuess(null)
-      setPhase('playing'); console.log('PHASE SET TO PLAYING')
+      setPhase('playing')
 
       preloadImages([left?.imageUrl, right?.imageUrl])
     } catch (err) {
       if (!mountedRef.current) return
       console.error('Game init error:', err)
       setError(err.message || 'Failed to connect to the server. Please try again.')
-      setPhase('playing'); console.log('PHASE SET TO PLAYING')
+      setPhase('playing')
     } finally {
       if (mountedRef.current) setIsLoading(false)
     }
@@ -134,7 +132,7 @@ export function useGame() {
 
             setLeftItem(normaliseItem(result.nextRound.knownItem))
             setRightItem(normaliseItem(result.nextRound.challengeItem))
-            setPhase('playing'); console.log('PHASE SET TO PLAYING')
+            setPhase('playing')
           }, 1200)
         } else {
           streakRef.current = 0
