@@ -202,7 +202,7 @@ export default function GamePage() {
         {/* Divider */}
         <div
           aria-hidden="true"
-          className="absolute sm:inset-y-0 sm:left-1/2 sm:w-px inset-x-0 top-[45%] h-px sm:h-auto z-20 pointer-events-none"
+          className="absolute sm:inset-y-0 sm:left-1/2 sm:w-px inset-x-0 top-1/2 h-px sm:h-auto z-20 pointer-events-none"
           style={{
             background:
               'linear-gradient(to bottom, transparent, rgba(255,255,255,0.15), transparent)',

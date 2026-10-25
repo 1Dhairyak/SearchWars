@@ -24,10 +24,8 @@ export default function Navbar() {
       role="banner"
     >
       <nav
-        className="flex items-center justify-between px-6 py-4"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(5,10,15,0.97) 0%, rgba(5,10,15,0.85) 70%, transparent 100%)',
-        }}
+        // Phones: solid bar (the stacked logo sits low, so a fade lets content show through).
+        className="flex items-center justify-between px-6 py-4 bg-[rgba(5,10,15,0.97)] border-b border-white/5 sm:border-b-0 sm:bg-[linear-gradient(to_bottom,rgba(5,10,15,0.97)_0%,rgba(5,10,15,0.85)_70%,transparent_100%)]"
         aria-label="Main navigation"
       >
         <Link to="/" aria-label="SearchWars — go to home">

@@ -12,7 +12,7 @@ export default function VSCircle({ score, phase }) {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-          className="absolute w-24 h-24 rounded-full"
+          className="absolute w-14 h-14 sm:w-24 sm:h-24 rounded-full"
           style={{
             background: isCorrect
               ? 'conic-gradient(from 0deg, #00FF87, #00C2FF, #00FF87)'
@@ -24,7 +24,7 @@ export default function VSCircle({ score, phase }) {
         />
         {/* Inner circle */}
         <div
-          className="relative z-10 w-20 h-20 rounded-full flex items-center justify-center"
+          className="relative z-10 w-12 h-12 sm:w-20 sm:h-20 rounded-full flex items-center justify-center"
           style={{
             background: 'rgba(5,10,15,0.95)',
             backdropFilter: 'blur(10px)',
@@ -34,7 +34,7 @@ export default function VSCircle({ score, phase }) {
             key={phase}
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="font-display text-2xl tracking-wider"
+            className="font-display text-lg sm:text-2xl tracking-wider"
             style={{
               color: isCorrect ? '#00FF87' : isWrong ? '#FF3C3C' : 'white',
               textShadow: isCorrect
@@ -49,12 +49,12 @@ export default function VSCircle({ score, phase }) {
         </div>
       </div>
 
-      {/* Score box */}
+      {/* Score box — hidden on phones: it covers the bottom card, and the top bar already shows the score */}
       <motion.div
         key={score}
         animate={phase === 'correct' ? { scale: [1, 1.4, 1] } : {}}
         transition={{ duration: 0.4 }}
-        className="flex flex-col items-center px-6 py-3 rounded-2xl"
+        className="hidden sm:flex flex-col items-center px-6 py-3 rounded-2xl"
         style={{
           background: 'rgba(5,10,15,0.85)',
           backdropFilter: 'blur(20px)',

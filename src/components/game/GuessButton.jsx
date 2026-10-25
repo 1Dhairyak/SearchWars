@@ -18,7 +18,7 @@ export default function GuessButton({
       whileTap={disabled ? {} : { scale: 0.96 }}
       aria-label={`Guess ${label.toLowerCase()}`}
       aria-disabled={disabled}
-      className="w-full py-3.5 px-6 rounded-full font-body font-bold text-base tracking-widest uppercase flex items-center justify-center gap-3 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-game-darker"
+      className="w-full py-3.5 px-4 sm:px-6 rounded-full font-body font-bold text-base tracking-widest uppercase flex items-center justify-center gap-3 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-game-darker"
       style={{
         background: 'rgba(255,255,255,0.06)',
         border: `2px solid ${color}`,

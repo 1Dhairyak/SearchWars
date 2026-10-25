@@ -275,24 +275,26 @@ export default function LeaderboardPage() {
           )}
 
           {!isLoading && !error && filtered.length > 0 && (
-            <table className="w-full border-collapse" aria-label="Leaderboard rankings">
-              <thead>
-                <tr>
-                  <th scope="col" className="pb-3 text-left">
-                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase pl-6">#</span>
+            // Rows are flex, so the table is laid out as blocks; header row
+            // mirrors the body row's padding/gap/column widths to line up.
+            <table className="block w-full" aria-label="Leaderboard rankings">
+              <thead className="block">
+                <tr style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 1.5rem 0.75rem' }}>
+                  <th scope="col" className="text-left" style={{ width: '3rem', flexShrink: 0, paddingLeft: '0.5rem' }}>
+                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase">#</span>
                   </th>
-                  <th scope="col" className="pb-3 text-left">
+                  <th scope="col" className="text-left" style={{ flex: 1 }}>
                     <span className="text-white/25 text-xs font-mono tracking-widest uppercase">Player</span>
                   </th>
-                  <th scope="col" className="pb-3 text-right hidden sm:table-cell">
-                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase pr-4">Category</span>
+                  <th scope="col" className="text-right hidden sm:block" style={{ width: '6rem' }}>
+                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase">Category</span>
                   </th>
-                  <th scope="col" className="pb-3 text-right">
-                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase pr-2">Score</span>
+                  <th scope="col" className="text-right" style={{ width: '4rem', flexShrink: 0 }}>
+                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase">Score</span>
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="block">
                 {filtered.map((entry) => {
                   const rankColor = getRankColor(entry.rank)
                   const rankRGB   = getRankRGB(entry.rank)
@@ -336,7 +338,7 @@ export default function LeaderboardPage() {
                         </span>
                         <span className="text-white/30 text-xs font-mono">{entry.date}</span>
                       </td>
-                      <td className="hidden sm:table-cell" style={{ width: '6rem', textAlign: 'right' }}>
+                      <td className="hidden sm:block" style={{ width: '6rem', textAlign: 'right' }}>
                         <span className="text-xs font-mono text-white/35 truncate">{entry.category}</span>
                       </td>
                       <td style={{ width: '4rem', textAlign: 'right', flexShrink: 0 }}>

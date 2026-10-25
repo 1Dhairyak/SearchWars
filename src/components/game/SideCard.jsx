@@ -76,7 +76,8 @@ export default function SideCard({
       />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center gap-4 px-6 sm:px-10 text-center max-w-lg w-full">
+      {/* Phones stack the cards: leave room for the VS badge on the shared edge */}
+      <div className={`relative z-10 flex flex-col items-center justify-center gap-2 sm:gap-4 px-6 sm:px-10 sm:py-0 text-center max-w-lg w-full ${isRight ? 'pt-8' : 'pb-8'}`}>
         {/* Category badge */}
         <span
           className="text-xs font-mono font-bold tracking-[0.3em] uppercase px-4 py-1.5 rounded-full"
@@ -130,9 +131,9 @@ export default function SideCard({
           </motion.div>
         ) : (
           /* Interactive state — guess buttons */
-          <div className="flex flex-col items-center gap-4 sm:gap-5 w-full">
+          <div className="flex flex-col items-center gap-3 sm:gap-5 w-full">
             <div
-              className="h-px w-24 rounded-full"
+              className="hidden sm:block h-px w-24 rounded-full"
               style={{ background: 'rgba(0,255,135,0.25)' }}
             />
             {compareItemName && (
@@ -143,7 +144,7 @@ export default function SideCard({
             )}
 
             <div
-              className="flex flex-col gap-3 w-full max-w-[240px]"
+              className="flex flex-row sm:flex-col gap-3 w-full max-w-[320px] sm:max-w-[240px]"
               role="group"
               aria-label="Make your guess"
             >
