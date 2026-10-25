@@ -121,8 +121,7 @@ export default function GamePage() {
       <div
         className="relative z-40 flex items-center justify-between px-4 sm:px-6 py-3 shrink-0"
         style={{
-          background: 'rgba(5,10,15,0.8)',
-          backdropFilter: 'blur(20px)',
+          background: 'rgba(5,10,15,0.95)',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}
       >
@@ -222,7 +221,7 @@ export default function GamePage() {
             <SideCard
               item={rightItem}
               side="right"
-              showVolume={phase !== 'playing'}
+              showVolume={phase === 'correct' || phase === 'wrong'}
               phase={phase}
               onGuess={guess}
               compareItemName={leftItem.name}
@@ -263,8 +262,7 @@ export default function GamePage() {
       <div
         className="relative z-40 flex items-center justify-between px-4 sm:px-6 py-2 shrink-0"
         style={{
-          background: 'rgba(5,10,15,0.7)',
-          backdropFilter: 'blur(10px)',
+          background: 'rgba(5,10,15,0.95)',
           borderTop: '1px solid rgba(255,255,255,0.04)',
         }}
       >

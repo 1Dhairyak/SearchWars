@@ -27,7 +27,6 @@ export default function VSCircle({ score, phase }) {
           className="relative z-10 w-12 h-12 sm:w-20 sm:h-20 rounded-full flex items-center justify-center"
           style={{
             background: 'rgba(5,10,15,0.95)',
-            backdropFilter: 'blur(10px)',
           }}
         >
           <motion.span
@@ -56,8 +55,7 @@ export default function VSCircle({ score, phase }) {
         transition={{ duration: 0.4 }}
         className="hidden sm:flex flex-col items-center px-6 py-3 rounded-2xl"
         style={{
-          background: 'rgba(5,10,15,0.85)',
-          backdropFilter: 'blur(20px)',
+          background: 'rgba(5,10,15,0.95)',
           border: '1px solid rgba(255,255,255,0.12)',
           boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
         }}

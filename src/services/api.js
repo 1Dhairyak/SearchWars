@@ -1,38 +1,7 @@
 /**
- * API Service Layer — Phase 4 (corrected against real backend)
- *
- * All backend calls go through here. Single place to:
- *  - Swap base URL per environment (VITE_API_BASE_URL)
- *  - Unwrap the { success, message, data } envelope every endpoint returns
- *  - Normalize error shapes across the whole app
- *  - Add retry logic with exponential backoff
- *
- * ── Real backend contracts ────────────────────────────────────────────────────
- *
- *  POST /api/game/start                          (was GET — fixed in production)
- *    body: { playerName?: string }               (body is optional)
- *    → ApiResponse<GameRoundDto>
- *      .data: { sessionId, knownItem, challengeItem, currentScore }
- *      knownItem / challengeItem: { id, title, imageUrl, category, searchVolume }
- *      challengeItem.searchVolume is null (hidden until guess resolves)
- *
- *  POST /api/game/guess
- *    body: { sessionId, challengeItemId, guess: "HIGHER" | "LOWER" }
- *    → ApiResponse<GuessResultDto>
- *      .data: { correct, score, revealedChallengeItem, nextRound, message, gameOver }
- *      nextRound: GameRoundDto | null
- *
- *  GET  /api/leaderboard?limit=10
- *    → ApiResponse<LeaderboardDto>
- *      .data: { entries: [{ rank, playerName, score, achievedAt, sessionId }],
- *               totalEntries, generatedAt }
- *
- *  NOTE: There is NO POST /api/leaderboard.
- *  The backend records scores automatically when a game ends (handleWrongGuess).
- *  Score submission from the frontend is NOT needed.
- *
- * ── Field name note ───────────────────────────────────────────────────────────
- *  ItemDto uses `title` (not `name`) — all frontend code normalises this on receipt.
+ * All backend calls. Every endpoint returns { success, message, data }; the
+ * response interceptor unwraps it so callers get `data` directly.
+ * Scores are recorded server-side on game over (no POST /leaderboard).
  */
 
 import axios from 'axios'
@@ -106,7 +75,22 @@ export function normaliseItem(item) {
   return {
     ...item,
     name: item.title ?? item.name ?? '',   // prefer title, fall back to name
+    imageUrl: smallerImage(item.imageUrl),
   }
+}
+
+// Seed images are full-size (1200px+). Ask the CDNs for a phone-friendly size.
+function smallerImage(url) {
+  if (!url) return url
+  if (url.includes('i.pinimg.com/1200x/')) return url.replace('/1200x/', '/736x/')
+  if (url.startsWith('https://images.unsplash.com/')) {
+    const u = new URL(url)
+    u.searchParams.set('w', '800')
+    u.searchParams.set('q', '70')
+    u.searchParams.set('auto', 'format')
+    return u.toString()
+  }
+  return url
 }
 
 // ── Game Service ──────────────────────────────────────────────────────────────

@@ -82,6 +82,8 @@ export function useGame() {
       try { soundManager.init() } catch (_) {}
 
       setLastGuess(direction)
+      // Disable the buttons right away so the tap feels instant while the server answers
+      setPhase('checking')
 
       try {
         const raw = await gameService.submitGuess(
@@ -111,12 +113,9 @@ export function useGame() {
 
           setPhase('correct')
 
-          if (result.nextRound) {
-            preloadImages([
-              result.nextRound.knownItem?.imageUrl,
-              result.nextRound.challengeItem?.imageUrl,
-            ])
-          }
+          const nextLeft  = normaliseItem(result.nextRound?.knownItem)
+          const nextRight = normaliseItem(result.nextRound?.challengeItem)
+          preloadImages([nextLeft?.imageUrl, nextRight?.imageUrl])
 
           advanceTimerRef.current = setTimeout(() => {
             if (!mountedRef.current) return
@@ -130,10 +129,10 @@ export function useGame() {
               return
             }
 
-            setLeftItem(normaliseItem(result.nextRound.knownItem))
-            setRightItem(normaliseItem(result.nextRound.challengeItem))
+            setLeftItem(nextLeft)
+            setRightItem(nextRight)
             setPhase('playing')
-          }, 1200)
+          }, 800)
         } else {
           streakRef.current = 0
           try { soundManager.wrong() } catch (_) {}

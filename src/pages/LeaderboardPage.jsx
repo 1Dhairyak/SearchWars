@@ -10,7 +10,6 @@ import { useGameContext } from '../context/GameContext'
 import { leaderboardService } from '../services/api'
 import { getRankColor, getRankRGB } from '../services/formatters'
 import StarfieldBg from '../components/ui/StarfieldBg'
-import ParticleField from '../components/ui/ParticleField'
 import Navbar from '../components/ui/Navbar'
 
 const RANK_MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' }
@@ -151,7 +150,6 @@ export default function LeaderboardPage() {
       className="relative min-h-screen bg-game-darker overflow-hidden"
     >
       <StarfieldBg variant="green" />
-      <ParticleField count={40} color="#FFD700" />
       <Navbar />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 pt-28 pb-20">

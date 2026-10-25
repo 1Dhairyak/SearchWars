@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { usePageVariants } from '../animations/variants'
 import StarfieldBg from '../components/ui/StarfieldBg'
-import ParticleField from '../components/ui/ParticleField'
 
 export default function NotFoundPage() {
   const pageVariants = usePageVariants()
@@ -18,7 +17,6 @@ export default function NotFoundPage() {
       aria-label="404 — Page not found"
     >
       <StarfieldBg variant="red" />
-      <ParticleField count={30} color="#FF3C3C" />
 
       <div className="relative z-10 text-center px-4 max-w-xl">
         <motion.div

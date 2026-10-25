@@ -77,18 +77,14 @@ export default function GameOverPage() {
         <SoundToggle />
       </div>
 
-      {/* Decorative rings */}
-      <motion.div
+      {/* Decorative rings (static: rotating a uniform circle looks identical but redraws every frame) */}
+      <div
         aria-hidden="true"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
         className="absolute rounded-full pointer-events-none"
         style={{ width: 'min(700px, 90vw)', height: 'min(700px, 90vw)', border: '1px solid rgba(255,60,60,0.08)' }}
       />
-      <motion.div
+      <div
         aria-hidden="true"
-        animate={{ rotate: -360 }}
-        transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
         className="absolute rounded-full pointer-events-none"
         style={{ width: 'min(500px, 70vw)', height: 'min(500px, 70vw)', border: '1px solid rgba(0,255,135,0.08)' }}
       />
@@ -127,7 +123,6 @@ export default function GameOverPage() {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              filter: `drop-shadow(0 0 30px ${isGoodScore ? 'rgba(0,255,135,0.5)' : 'rgba(255,60,60,0.5)'})`,
             }}
           >
             {score}

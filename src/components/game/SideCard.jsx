@@ -38,14 +38,16 @@ export default function SideCard({
       className="relative w-full h-full flex items-center justify-center overflow-hidden"
       aria-label={`${item.name} — ${item.category}`}
     >
-      {/* Background image — eager loading for no blank flash */}
+      {/* Background image — eager loading for no blank flash.
+          Darkened with an overlay, not a CSS filter: filters on full-screen images are slow on phones. */}
       <img
         src={item.imageUrl}
         alt={`${item.name} — ${item.category}`}
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ filter: 'brightness(0.35) saturate(1.3) contrast(1.1)' }}
         loading="eager"
+        decoding="async"
       />
+      <div aria-hidden="true" className="absolute inset-0 bg-black/65" />
 
       {/* Color tint */}
       <div
@@ -71,7 +73,7 @@ export default function SideCard({
       {/* Phase feedback border */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 pointer-events-none transition-all duration-500"
+        className="absolute inset-0 pointer-events-none"
         style={{ boxShadow: borderGlow }}
       />
 

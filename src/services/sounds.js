@@ -1,19 +1,11 @@
 /**
- * Sound Service — Phase 5
+ * Sound Service
  *
- * Uses Howler.js for cross-browser audio with Web Audio API fallback.
- * All sounds are generated programmatically via the Web Audio API so
- * no external audio files are required — zero network cost, zero 404 risk.
- *
- * Architecture:
- *  - soundManager singleton initialises lazily on first interaction
- *  - Respects prefers-reduced-motion (also reduces audio intensity)
- *  - Volume persists in localStorage ('hl_sfx_vol')
- *  - Mute state persists in localStorage ('hl_sfx_muted')
- *  - All methods are safe to call without initialisation (no-op guards)
+ * All sounds are synthesized with the Web Audio API — no audio files, no library.
+ *  - soundManager initialises lazily on first interaction
+ *  - Volume persists in localStorage ('hl_sfx_vol'), mute in 'hl_sfx_muted'
+ *  - All methods are safe to call without initialisation
  */
-
-import { Howl, Howler } from 'howler'
 
 // ── Web Audio context (single shared instance) ────────────────────────────────
 let _audioCtx = null
@@ -96,11 +88,6 @@ function playNoise(duration = 0.05, gain = 0.15, startTime = 0) {
 
 // ── Named sound playback functions ────────────────────────────────────────────
 
-/** UI hover tick */
-function sfxHover() {
-  playTone(880, 0.06, 'sine', 0.08)
-}
-
 /** Button press click */
 function sfxClick() {
   playNoise(0.04, 0.2)
@@ -179,30 +166,21 @@ export const soundManager = {
     if (this._initialised) return
     getAudioCtx() // unlock
     this._initialised = true
-    Howler.volume(this._muted ? 0 : this._volume)
   },
 
   getVolume() {
     return this._muted ? 0 : this._volume
   },
 
-  setVolume(v) {
-    this._volume = Math.max(0, Math.min(1, v))
-    localStorage.setItem(STORAGE_VOL, String(this._volume))
-    Howler.volume(this._muted ? 0 : this._volume)
-  },
-
   toggleMute() {
     this._muted = !this._muted
     localStorage.setItem(STORAGE_MUTE, String(this._muted))
-    Howler.volume(this._muted ? 0 : this._volume)
     return this._muted
   },
 
   isMuted() { return this._muted },
 
   // ── Public play API ────────────────────────────────────────────────────────
-  hover()     { if (!this._muted) sfxHover() },
   click()     { if (!this._muted) sfxClick() },
   correct()   { if (!this._muted) sfxCorrect() },
   wrong()     { if (!this._muted) sfxWrong() },

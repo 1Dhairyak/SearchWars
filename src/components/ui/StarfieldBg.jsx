@@ -37,20 +37,6 @@ export default function StarfieldBg({ variant = 'dark' }) {
         }}
       />
 
-      {/* Nebula blobs */}
-      <div
-        className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-5"
-        style={{ background: 'radial-gradient(circle, #00FF87, transparent)' }}
-      />
-      <div
-        className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl opacity-5"
-        style={{ background: 'radial-gradient(circle, #FF3C3C, transparent)' }}
-      />
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full blur-3xl opacity-1"
-        style={{ background: 'radial-gradient(ellipse, #00C2FF, transparent)' }}
-      />
-
       {/* Grid overlay */}
       <div
         className="absolute inset-0 opacity-[0.015]"
