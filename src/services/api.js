@@ -99,6 +99,9 @@ export const playerService = {
   // With sessionId, that game's leaderboard entry is renamed too. → { name }
   claimName: (name, sessionId) =>
     request('POST', '/players/name', { name, guestToken: readPlayer().guestToken, sessionId }),
+
+  // Signed-in user's best score across all devices (401 when logged out). → { bestScore }
+  getBest: () => withRetry(() => request('GET', '/players/best')),
 }
 
 export const authService = {

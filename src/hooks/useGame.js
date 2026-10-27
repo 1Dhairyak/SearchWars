@@ -7,7 +7,7 @@ import { preloadImages } from '../services/imagePreloader'
 const NEXT_ROUND_DELAY_MS = 800
 
 export function useGame() {
-  const { updateHighScore } = useGameContext()
+  const { updateHighScore, snapshotBest } = useGameContext()
 
   const [sessionId, setSessionId] = useState(null)
   const [leftItem,  setLeftItem]  = useState(null)
@@ -30,6 +30,7 @@ export function useGame() {
     try { soundManager.init() } catch (_) {}
 
     streakRef.current = 0
+    snapshotBest()
     setError(null)
     setPhase('loading')
 
@@ -50,7 +51,7 @@ export function useGame() {
       if (!mountedRef.current) return
       setError(err.message || 'Failed to connect to the server. Please try again.')
     }
-  }, [])
+  }, [snapshotBest])
 
   useEffect(() => { init() }, [init])
 

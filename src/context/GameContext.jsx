@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { playerService } from '../services/api'
 
 // App-wide state: high score + player identity, persisted in localStorage.
 const GameContext = createContext(null)
@@ -25,9 +26,14 @@ export function GameProvider({ children }) {
     () => Number(localStorage.getItem('hl_highscore') || 0)
   )
 
-  // Read once at mount, before any update, so GameOverPage can detect a new high score.
-  const [prevBest] = useState(
+  // Best before the current game, so GameOverPage can detect a new high score.
+  // Re-snapshotted at each game start (useGame calls snapshotBest).
+  const [prevBest, setPrevBest] = useState(
     () => Number(localStorage.getItem('hl_highscore') || 0)
+  )
+  const snapshotBest = useCallback(
+    () => setPrevBest(Number(localStorage.getItem('hl_highscore') || 0)),
+    []
   )
 
   const [player, setPlayer] = useState(loadPlayer)
@@ -52,8 +58,22 @@ export function GameProvider({ children }) {
     [highScore]
   )
 
+  // Signed in (on load or right after login) → pull the account's best from the server,
+  // so a score set on another device shows here. Server scores come from server-side games.
+  useEffect(() => {
+    if (!player.authToken) return
+    playerService.getBest()
+      .then(({ bestScore }) => {
+        if (!(bestScore > Number(localStorage.getItem('hl_highscore') || 0))) return
+        localStorage.setItem('hl_highscore', String(bestScore))
+        setHighScoreState(bestScore)
+        setPrevBest((p) => Math.max(p, bestScore))
+      })
+      .catch(() => {}) // offline / expired token: keep the local best
+  }, [player.authToken])
+
   return (
-    <GameContext.Provider value={{ highScore, prevBest, updateHighScore, player, updatePlayer, logout }}>
+    <GameContext.Provider value={{ highScore, prevBest, snapshotBest, updateHighScore, player, updatePlayer, logout }}>
       {children}
     </GameContext.Provider>
   )
