@@ -5,6 +5,7 @@ import GamePage from './pages/GamePage'
 import GameOverPage from './pages/GameOverPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import NotFoundPage from './pages/NotFoundPage'
+import PrivacyPage from './pages/PrivacyPage'
 import { warmUp } from './services/api'
 
 warmUp()
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/game" element={<GamePage />} />
           <Route path="/game-over" element={<GameOverPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </GameProvider>
