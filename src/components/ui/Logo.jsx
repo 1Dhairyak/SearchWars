@@ -6,7 +6,6 @@ const SIZES = {
   sm: { higher: 'text-4xl', lower: 'text-4xl' },
   md: { higher: 'text-6xl', lower: 'text-6xl' },
   lg: { higher: 'text-8xl md:text-9xl', lower: 'text-8xl md:text-9xl' },
-  xl: { higher: 'text-9xl', lower: 'text-9xl' },
 }
 
 export default function Logo({ size = 'lg' }) {

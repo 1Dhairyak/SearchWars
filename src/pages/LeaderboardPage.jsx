@@ -1,11 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  usePageVariants,
-  staggerContainer,
-  staggerItem,
-} from '../animations/variants'
 import { useGameContext } from '../context/GameContext'
 import { leaderboardService } from '../services/api'
 import { getRankColor, getRankRGB } from '../services/formatters'
@@ -13,7 +7,7 @@ import StarfieldBg from '../components/ui/StarfieldBg'
 import Navbar from '../components/ui/Navbar'
 
 const RANK_MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' }
-const CATEGORIES = ['All', 'Gaming', 'Movies', 'Celebrities', 'Technology', 'Food']
+const STAGGERED_ROWS = 10 // rows beyond this appear without delay
 
 function RankBadge({ rank }) {
   const color = getRankColor(rank)
@@ -40,8 +34,7 @@ function RankBadge({ rank }) {
 
 function SkeletonRow({ index }) {
   return (
-    <motion.div
-      variants={staggerItem}
+    <div
       className="flex items-center gap-4 px-6 py-4 rounded-2xl mb-2"
       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
     >
@@ -55,112 +48,47 @@ function SkeletonRow({ index }) {
       </div>
       <div className="w-10 h-6 rounded animate-pulse"
         style={{ background: 'rgba(255,255,255,0.08)' }} />
-    </motion.div>
+    </div>
   )
 }
 
+const formatDate = (iso) => iso
+  ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  : '—'
+
 export default function LeaderboardPage() {
-  const [filter,    setFilter]    = useState('All')
   const [entries,   setEntries]   = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error,     setError]     = useState(null)
+  const { highScore, player } = useGameContext()
 
-  const pageVariants = usePageVariants()
-  const { highScore } = useGameContext()
-
-  // ── Load leaderboard ──────────────────────────────────────────────────────
-  const load = () => {
+  const load = useCallback((isCancelled = () => false) => {
     setIsLoading(true)
     setError(null)
-
     leaderboardService.getTop(50)
       .then((payload) => {
-        /**
-         * After envelope unwrap, payload is LeaderboardDto:
-         * {
-         *   entries: [{ rank, playerName, score, achievedAt, sessionId }],
-         *   totalEntries: number,
-         *   generatedAt: string
-         * }
-         */
-        const raw = Array.isArray(payload?.entries)
-          ? payload.entries
-          : Array.isArray(payload)
-            ? payload          // safety: handle if unwrap returns flat array
-            : []
-
-        const normalised = raw.map((e) => ({
-          ...e,
-          // achievedAt is ISO-8601 from LocalDateTime — format for display
-          date: e.achievedAt
-            ? new Date(e.achievedAt).toLocaleDateString('en-US', {
-                year: 'numeric', month: 'short', day: 'numeric',
-              })
-            : '—',
-          category: e.category ?? 'All',
-        }))
-
-        setEntries(normalised)
+        if (isCancelled()) return
+        setEntries((payload?.entries ?? []).map((e) => ({ ...e, date: formatDate(e.achievedAt) })))
       })
-      .catch((err) => setError(err.message || 'Failed to load leaderboard'))
-      .finally(() => setIsLoading(false))
-  }
+      .catch((err) => { if (!isCancelled()) setError(err.message || 'Failed to load leaderboard') })
+      .finally(() => { if (!isCancelled()) setIsLoading(false) })
+  }, [])
 
   useEffect(() => {
     let cancelled = false
-    setIsLoading(true)
-    setError(null)
-
-    leaderboardService.getTop(50)
-      .then((payload) => {
-        if (cancelled) return
-        const raw = Array.isArray(payload?.entries) ? payload.entries
-          : Array.isArray(payload) ? payload : []
-
-        setEntries(
-          raw.map((e) => ({
-            ...e,
-            date: e.achievedAt
-              ? new Date(e.achievedAt).toLocaleDateString('en-US', {
-                  year: 'numeric', month: 'short', day: 'numeric',
-                })
-              : '—',
-            category: e.category ?? 'All',
-          }))
-        )
-      })
-      .catch((err) => { if (!cancelled) setError(err.message || 'Failed to load leaderboard') })
-      .finally(() => { if (!cancelled) setIsLoading(false) })
-
+    load(() => cancelled)
     return () => { cancelled = true }
-  }, [])
-
-  // Client-side category filter
-  const filtered = useMemo(
-    () => filter === 'All' ? entries : entries.filter((e) => e.category === filter),
-    [filter, entries]
-  )
+  }, [load])
 
   return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="relative min-h-screen bg-game-darker overflow-hidden"
-    >
+    <div className="relative min-h-screen bg-game-darker overflow-hidden animate-page">
       <StarfieldBg variant="green" />
       <Navbar />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 pt-28 pb-20">
 
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10"
-        >
+        <div className="text-center mb-10">
           <div aria-hidden="true" className="text-5xl mb-4">🏆</div>
           <h1
             className="font-display text-5xl sm:text-6xl md:text-8xl text-white tracking-wider"
@@ -171,18 +99,16 @@ export default function LeaderboardPage() {
           <p className="mt-3 text-white/40 font-mono text-sm tracking-widest uppercase">
             Top scores from around the world
           </p>
-        </motion.div>
+        </div>
 
         {/* Your best score */}
         {highScore > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mb-8 flex items-center justify-between px-6 py-4 rounded-2xl"
+          <div
+            className="mb-8 flex items-center justify-between px-6 py-4 rounded-2xl animate-pop"
             role="status"
             aria-label={`Your best score: ${highScore}`}
             style={{
+              animationDelay: '0.2s',
               background: 'rgba(0,255,135,0.06)',
               border: '1px solid rgba(0,255,135,0.2)',
               boxShadow: '0 0 20px rgba(0,255,135,0.05)',
@@ -192,7 +118,7 @@ export default function LeaderboardPage() {
               <span aria-hidden="true" className="text-2xl">⚡</span>
               <div>
                 <p className="text-white/40 text-xs font-mono tracking-widest uppercase">Your Best</p>
-                <p className="text-white font-body font-semibold">You</p>
+                <p className="text-white font-body font-semibold">{player.name || 'You'}</p>
               </div>
             </div>
             <span
@@ -201,45 +127,13 @@ export default function LeaderboardPage() {
             >
               {highScore}
             </span>
-          </motion.div>
+          </div>
         )}
-
-        {/* Category filter */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="flex flex-wrap gap-2 mb-8 justify-center"
-          role="group"
-          aria-label="Filter by category"
-        >
-          {CATEGORIES.map((cat) => {
-            const isActive = filter === cat
-            return (
-              <button
-                key={cat}
-                onClick={() => setFilter(cat)}
-                aria-pressed={isActive}
-                className="px-4 py-2 rounded-full text-xs font-mono font-bold tracking-widest uppercase transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-gold focus-visible:ring-offset-1 focus-visible:ring-offset-game-darker"
-                style={{
-                  background: isActive ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${isActive ? 'rgba(255,215,0,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                  color: isActive ? '#FFD700' : 'rgba(255,255,255,0.5)',
-                  boxShadow: isActive ? '0 0 15px rgba(255,215,0,0.15)' : 'none',
-                }}
-              >
-                {cat}
-              </button>
-            )
-          })}
-        </motion.div>
 
         {/* Error state */}
         {error && !isLoading && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 flex flex-col items-center gap-4 px-6 py-8 rounded-2xl text-center"
+          <div
+            className="mb-6 flex flex-col items-center gap-4 px-6 py-8 rounded-2xl text-center animate-fade-in-up"
             role="alert"
             style={{
               background: 'rgba(255,60,60,0.06)',
@@ -249,140 +143,117 @@ export default function LeaderboardPage() {
             <span aria-hidden="true" className="text-3xl">📡</span>
             <p className="text-white/70 font-body text-sm">{error}</p>
             <button
-              onClick={load}
+              onClick={() => load()}
               className="px-6 py-2 rounded-full font-body font-bold text-sm text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-green"
               style={{ background: 'linear-gradient(135deg, #00FF87, #00C2FF)' }}
             >
               Try Again
             </button>
-          </motion.div>
+          </div>
         )}
 
-        {/* Table */}
-        <motion.div variants={staggerContainer} initial="initial" animate="animate">
+        {isLoading && Array.from({ length: 10 }, (_, i) => <SkeletonRow key={i} index={i} />)}
 
-          {isLoading && Array.from({ length: 10 }, (_, i) => <SkeletonRow key={i} index={i} />)}
+        {!isLoading && !error && entries.length === 0 && (
+          <div className="text-center py-16 text-white/30 font-mono text-sm animate-fade-in">
+            No scores yet. Be the first!
+          </div>
+        )}
 
-          {!isLoading && !error && filtered.length === 0 && (
-            <motion.div
-              variants={staggerItem}
-              className="text-center py-16 text-white/30 font-mono text-sm"
-            >
-              No scores yet{filter !== 'All' ? ` for ${filter}` : ''}. Be the first!
-            </motion.div>
-          )}
+        {!isLoading && !error && entries.length > 0 && (
+          // Rows are flex, so the table is laid out as blocks; header row
+          // mirrors the body row's padding/gap/column widths to line up.
+          <table className="block w-full" aria-label="Leaderboard rankings">
+            <thead className="block">
+              <tr style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 1.5rem 0.75rem' }}>
+                <th scope="col" className="text-left" style={{ width: '3rem', flexShrink: 0, paddingLeft: '0.5rem' }}>
+                  <span className="text-white/25 text-xs font-mono tracking-widest uppercase">#</span>
+                </th>
+                <th scope="col" className="text-left" style={{ flex: 1 }}>
+                  <span className="text-white/25 text-xs font-mono tracking-widest uppercase">Player</span>
+                </th>
+                <th scope="col" className="text-right" style={{ width: '4rem', flexShrink: 0 }}>
+                  <span className="text-white/25 text-xs font-mono tracking-widest uppercase">Score</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="block">
+              {entries.map((entry, i) => {
+                const rankColor = getRankColor(entry.rank)
+                const rankRGB   = getRankRGB(entry.rank)
+                const isTop3    = entry.rank <= 3
 
-          {!isLoading && !error && filtered.length > 0 && (
-            // Rows are flex, so the table is laid out as blocks; header row
-            // mirrors the body row's padding/gap/column widths to line up.
-            <table className="block w-full" aria-label="Leaderboard rankings">
-              <thead className="block">
-                <tr style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 1.5rem 0.75rem' }}>
-                  <th scope="col" className="text-left" style={{ width: '3rem', flexShrink: 0, paddingLeft: '0.5rem' }}>
-                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase">#</span>
-                  </th>
-                  <th scope="col" className="text-left" style={{ flex: 1 }}>
-                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase">Player</span>
-                  </th>
-                  <th scope="col" className="text-right hidden sm:block" style={{ width: '6rem' }}>
-                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase">Category</span>
-                  </th>
-                  <th scope="col" className="text-right" style={{ width: '4rem', flexShrink: 0 }}>
-                    <span className="text-white/25 text-xs font-mono tracking-widest uppercase">Score</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="block">
-                {filtered.map((entry) => {
-                  const rankColor = getRankColor(entry.rank)
-                  const rankRGB   = getRankRGB(entry.rank)
-                  const isTop3    = entry.rank <= 3
-
-                  return (
-                    <motion.tr
-                      key={entry.rank}
-                      variants={staggerItem}
-                      whileHover={{ x: 4, scale: 1.01 }}
-                      transition={{ duration: 0.2 }}
-                      className="relative overflow-hidden"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '1rem',
-                        padding: '1rem 1.5rem',
-                        borderRadius: '1rem',
-                        marginBottom: '0.5rem',
-                        background: isTop3 ? `rgba(${rankRGB},0.06)` : 'rgba(255,255,255,0.03)',
-                        border: `1px solid ${isTop3 ? `rgba(${rankRGB},0.15)` : 'rgba(255,255,255,0.06)'}`,
-                        boxShadow: isTop3 ? `0 0 20px rgba(${rankRGB},0.06)` : 'none',
-                      }}
-                    >
-                      {isTop3 && (
-                        <td aria-hidden="true" style={{
-                          position: 'absolute', inset: '0 auto 0 0',
-                          width: '3px', borderRadius: '0 2px 2px 0',
-                          background: rankColor, boxShadow: `0 0 10px ${rankColor}`,
-                        }} />
-                      )}
-                      <td style={{ flexShrink: 0, paddingLeft: '0.5rem' }}>
-                        <RankBadge rank={entry.rank} />
-                      </td>
-                      <td style={{ flex: 1, minWidth: 0 }}>
-                        <span
-                          className="font-body font-semibold text-sm sm:text-base block truncate"
-                          style={{ color: isTop3 ? rankColor : 'white' }}
-                        >
-                          {entry.playerName}
-                        </span>
-                        <span className="text-white/30 text-xs font-mono">{entry.date}</span>
-                      </td>
-                      <td className="hidden sm:block" style={{ width: '6rem', textAlign: 'right' }}>
-                        <span className="text-xs font-mono text-white/35 truncate">{entry.category}</span>
-                      </td>
-                      <td style={{ width: '4rem', textAlign: 'right', flexShrink: 0 }}>
-                        <span
-                          className="font-display text-2xl sm:text-3xl"
-                          style={{
-                            color: isTop3 ? rankColor : 'white',
-                            textShadow: isTop3 ? `0 0 15px rgba(${rankRGB},0.5)` : 'none',
-                          }}
-                        >
-                          {entry.score}
-                        </span>
-                      </td>
-                    </motion.tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          )}
-        </motion.div>
+                return (
+                  <tr
+                    key={entry.rank}
+                    className="relative overflow-hidden animate-fade-in-up transition-transform duration-200 sm:hover:translate-x-1 sm:hover:scale-[1.01]"
+                    style={{
+                      animationDelay: `${Math.min(i, STAGGERED_ROWS) * 0.05}s`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '1rem',
+                      padding: '1rem 1.5rem',
+                      borderRadius: '1rem',
+                      marginBottom: '0.5rem',
+                      background: isTop3 ? `rgba(${rankRGB},0.06)` : 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${isTop3 ? `rgba(${rankRGB},0.15)` : 'rgba(255,255,255,0.06)'}`,
+                      boxShadow: isTop3 ? `0 0 20px rgba(${rankRGB},0.06)` : 'none',
+                    }}
+                  >
+                    {isTop3 && (
+                      <td aria-hidden="true" style={{
+                        position: 'absolute', inset: '0 auto 0 0',
+                        width: '3px', borderRadius: '0 2px 2px 0',
+                        background: rankColor, boxShadow: `0 0 10px ${rankColor}`,
+                      }} />
+                    )}
+                    <td style={{ flexShrink: 0, paddingLeft: '0.5rem' }}>
+                      <RankBadge rank={entry.rank} />
+                    </td>
+                    <td style={{ flex: 1, minWidth: 0 }}>
+                      <span
+                        className="font-body font-semibold text-sm sm:text-base block truncate"
+                        style={{ color: isTop3 ? rankColor : 'white' }}
+                      >
+                        {entry.playerName}
+                      </span>
+                      <span className="text-white/30 text-xs font-mono">{entry.date}</span>
+                    </td>
+                    <td style={{ width: '4rem', textAlign: 'right', flexShrink: 0 }}>
+                      <span
+                        className="font-display text-2xl sm:text-3xl"
+                        style={{
+                          color: isTop3 ? rankColor : 'white',
+                          textShadow: isTop3 ? `0 0 15px rgba(${rankRGB},0.5)` : 'none',
+                        }}
+                      >
+                        {entry.score}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="mt-12 text-center"
-        >
+        <div className="mt-12 text-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
           <p className="text-white/30 text-sm font-body mb-6">
             Think you can crack the top 10?
           </p>
-          <Link to="/game">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-10 py-4 rounded-full font-body font-bold text-black text-lg tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-gold focus-visible:ring-offset-2 focus-visible:ring-offset-game-darker"
-              style={{
-                background: 'linear-gradient(135deg, #FFD700, #FF8C00)',
-                boxShadow: '0 0 30px rgba(255,215,0,0.3)',
-              }}
-            >
-              🎮 BEAT THE LEADERBOARD
-            </motion.button>
+          <Link
+            to="/game"
+            className="inline-block px-10 py-4 rounded-full font-body font-bold text-black text-lg tracking-wide transition-transform duration-200 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-game-gold focus-visible:ring-offset-2 focus-visible:ring-offset-game-darker"
+            style={{
+              background: 'linear-gradient(135deg, #FFD700, #FF8C00)',
+              boxShadow: '0 0 30px rgba(255,215,0,0.3)',
+            }}
+          >
+            🎮 BEAT THE LEADERBOARD
           </Link>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

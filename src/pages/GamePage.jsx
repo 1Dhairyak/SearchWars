@@ -1,17 +1,9 @@
 /**
- * GamePage — Phase 5
- *
- * Phase 5 additions over Phase 4:
- *  - SoundToggle button in the top bar
- *  - soundManager.init() called on first render (unlocks AudioContext)
- *  - soundManager.swipe() on navigate away (home / restart feel snappy)
- *  - soundManager.gameOver() fired when phase === 'wrong' before navigation
- *  - soundManager.highScore() fired for new high scores (via GameContext)
+ * GamePage — the game loop UI. All animation is CSS (transform/opacity only)
+ * so it stays on the GPU on phones.
  */
 import { useEffect, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { usePageVariants, shakeVariant } from '../animations/variants'
 import { useGame } from '../hooks/useGame'
 import { useGameContext } from '../context/GameContext'
 import { soundManager } from '../services/sounds'
@@ -22,8 +14,7 @@ import SoundToggle from '../components/ui/SoundToggle'
 
 export default function GamePage() {
   const navigate = useNavigate()
-  const pageVariants = usePageVariants()
-  const { leftItem, rightItem, score, phase, guess, reset, error } = useGame()
+  const { leftItem, rightItem, score, phase, guess, reset, error, sessionId } = useGame()
   const { highScore } = useGameContext()
 
   // Keyboard controls (unchanged from Phase 4)
@@ -46,10 +37,10 @@ export default function GamePage() {
     if (phase !== 'wrong') return
     soundManager.gameOver()
     const t = setTimeout(() => {
-      navigate('/game-over', { state: { score, highScore } })
+      navigate('/game-over', { state: { score, highScore, sessionId } })
     }, 1600)
     return () => clearTimeout(t)
-  }, [phase, score, highScore, navigate])
+  }, [phase, score, highScore, sessionId, navigate])
 
   // Slow first load = backend waking from sleep (Render free tier)
   const [slowLoad, setSlowLoad] = useState(false)
@@ -85,10 +76,8 @@ export default function GamePage() {
     return (
       <div className="min-h-screen bg-game-darker flex items-center justify-center px-4">
         <div className="text-center flex flex-col items-center gap-6">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="w-14 h-14 rounded-full"
+          <div
+            className="w-14 h-14 rounded-full animate-spin"
             style={{
               border: '3px solid rgba(0,255,135,0.15)',
               borderTopColor: '#00FF87',
@@ -108,12 +97,8 @@ export default function GamePage() {
   }
 
   return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="relative w-full h-screen overflow-hidden bg-game-darker flex flex-col"
+    <div
+      className="relative w-full h-screen overflow-hidden bg-game-darker flex flex-col animate-fade-in"
       role="main"
       aria-label="SearchWars game"
     >
@@ -176,27 +161,20 @@ export default function GamePage() {
       </div>
 
       {/* ── Game area ────────────────────────────────────────────────────────── */}
-      <motion.div
-        variants={phase === 'wrong' ? shakeVariant : {}}
-        animate={phase === 'wrong' ? 'shake' : ''}
-        className="relative flex flex-col sm:flex-row flex-1 overflow-hidden"
+      <div
+        className={`relative flex flex-col sm:flex-row flex-1 overflow-hidden ${phase === 'wrong' ? 'animate-shake' : ''}`}
         aria-live="assertive"
         aria-atomic="true"
       >
         <ScorePopup phase={phase} score={score} />
 
-        {/* LEFT CARD */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`left-${leftItem.id}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="flex-1 relative sm:h-full h-[45%] overflow-hidden"
-          >
-            <SideCard item={leftItem} side="left" showVolume phase={phase} />
-          </motion.div>
-        </AnimatePresence>
+        {/* LEFT CARD — re-mounts (new key) each round, which replays the fade */}
+        <div
+          key={`left-${leftItem.id}`}
+          className="flex-1 relative sm:h-full overflow-hidden animate-fade-in"
+        >
+          <SideCard item={leftItem} side="left" showVolume phase={phase} />
+        </div>
 
         {/* Divider */}
         <div
@@ -209,54 +187,30 @@ export default function GamePage() {
         />
 
         {/* RIGHT CARD */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`right-${rightItem.id}`}
-            initial={{ x: '100%', opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '-100%', opacity: 0 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-1 relative sm:h-full h-[55%] overflow-hidden"
-          >
-            <SideCard
-              item={rightItem}
-              side="right"
-              showVolume={phase === 'correct' || phase === 'wrong'}
-              phase={phase}
-              onGuess={guess}
-              compareItemName={leftItem.name}
-            />
-          </motion.div>
-        </AnimatePresence>
+        <div
+          key={`right-${rightItem.id}`}
+          className="flex-1 relative sm:h-full overflow-hidden animate-slide-in-right"
+        >
+          <SideCard
+            item={rightItem}
+            side="right"
+            showVolume={phase === 'correct' || phase === 'wrong'}
+            phase={phase}
+            onGuess={guess}
+            compareItemName={leftItem.name}
+          />
+        </div>
 
         <VSCircle score={score} phase={phase} />
 
-        {/* Full-screen feedback flash */}
-        <AnimatePresence>
-          {phase === 'correct' && (
-            <motion.div
-              key="correct-flash"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.08 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              aria-hidden="true"
-              className="absolute inset-0 pointer-events-none z-20 bg-game-green"
-            />
-          )}
-          {phase === 'wrong' && (
-            <motion.div
-              key="wrong-flash"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.12 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              aria-hidden="true"
-              className="absolute inset-0 pointer-events-none z-20 bg-game-red"
-            />
-          )}
-        </AnimatePresence>
-      </motion.div>
+        {/* Full-screen feedback flash (translucent colour, faded in) */}
+        {phase === 'correct' && (
+          <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-20 bg-game-green/[0.08] animate-fade-in" />
+        )}
+        {phase === 'wrong' && (
+          <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-20 bg-game-red/[0.12] animate-fade-in" />
+        )}
+      </div>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
       <div
@@ -273,7 +227,7 @@ export default function GamePage() {
           ↑ ↓ arrow keys to guess
         </span>
       </div>
-    </motion.div>
+    </div>
   )
 }
 

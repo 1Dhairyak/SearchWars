@@ -6,7 +6,7 @@ Live: **https://search-wars.vercel.app**
 
 ## Stack
 
-- **Frontend (this repo):** React 19, Vite 5, Tailwind CSS 3, Framer Motion, React Router, Axios. Sounds are synthesized with the Web Audio API (no audio files). Hosted on Vercel.
+- **Frontend (this repo):** React 19, Vite 5, Tailwind CSS 3 (all animations are CSS), React Router, native fetch. Sounds are synthesized with the Web Audio API (no audio files). Hosted on Vercel.
 - **Backend:** Spring Boot 3 + PostgreSQL — [1Dhairyak/searchwars-backend](https://github.com/1Dhairyak/searchwars-backend), hosted on Render with a Neon database.
 
 ## Local development
@@ -32,9 +32,8 @@ Set `VITE_API_BASE_URL` (type **Config**) in Vercel to the backend URL, e.g. `ht
 ```
 src/
   pages/        Landing, Game, GameOver, Leaderboard, NotFound
-  components/   game/ (SideCard, VSCircle, GuessButton, ScorePopup), ui/ (Navbar, Logo, SoundToggle, StarfieldBg)
+  components/   game/ (SideCard, VSCircle, GuessButton, ScorePopup), ui/ (Navbar, LoginModal, Logo, SoundToggle, StarfieldBg)
   hooks/        useGame — game loop against the API
-  context/      GameContext — high score (localStorage)
+  context/      GameContext — high score + player name / guest token / login (localStorage)
   services/     api, sounds, formatters, imagePreloader
-  animations/   Framer Motion variants
 ```

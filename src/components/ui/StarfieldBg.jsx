@@ -1,19 +1,13 @@
-export default function StarfieldBg({ variant = 'dark' }) {
-  const gradients = {
-    dark: 'radial-gradient(ellipse at 30% 50%, rgba(0,30,60,0.8) 0%, #050A0F 60%)',
-    green: 'radial-gradient(ellipse at 70% 30%, rgba(0,60,30,0.6) 0%, #050A0F 60%)',
-    red: 'radial-gradient(ellipse at 30% 70%, rgba(60,0,0,0.6) 0%, #050A0F 60%)',
-    split: `
-      radial-gradient(ellipse at 20% 50%, rgba(255,40,40,0.12) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 50%, rgba(0,255,135,0.12) 0%, transparent 50%),
-      #050A0F
-    `,
-  }
+const GRADIENTS = {
+  green: 'radial-gradient(ellipse at 70% 30%, rgba(0,60,30,0.6) 0%, #050A0F 60%)',
+  red: 'radial-gradient(ellipse at 30% 70%, rgba(60,0,0,0.6) 0%, #050A0F 60%)',
+}
 
+export default function StarfieldBg({ variant }) {
   return (
     <div
       className="absolute inset-0 pointer-events-none"
-      style={{ background: gradients[variant] || gradients.dark, zIndex: 0 }}
+      style={{ background: GRADIENTS[variant], zIndex: 0 }}
     >
       {/* Static star dots via CSS */}
       <div

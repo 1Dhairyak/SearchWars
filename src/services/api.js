@@ -1,80 +1,62 @@
 /**
- * All backend calls. Every endpoint returns { success, message, data }; the
- * response interceptor unwraps it so callers get `data` directly.
- * Scores are recorded server-side on game over (no POST /leaderboard).
+ * All backend calls, using the browser's fetch (no HTTP library).
+ * Game/leaderboard endpoints return { success, message, data } and are unwrapped
+ * to `data`; auth endpoints return plain JSON. Errors throw Error(message) with `.status`.
  */
-
-import axios from 'axios'
+import { readPlayer } from '../context/GameContext'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const TIMEOUT_MS = 60_000 // Render free tier cold start can take ~30-60s
 
-export const apiClient = axios.create({
-  baseURL: BASE_URL,
-  // Render free tier cold start can take ~30-60s
-  timeout: 60_000,
-  headers: { 'Content-Type': 'application/json' },
-})
+async function request(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' }
+  const { authToken } = readPlayer()
+  if (authToken) headers.Authorization = `Bearer ${authToken}`
 
-// ── Request interceptor ───────────────────────────────────────────────────────
-apiClient.interceptors.request.use((config) => {
-  // Phase 5: inject JWT
-  // const token = localStorage.getItem('hl_token')
-  // if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
-
-// ── Response interceptor ──────────────────────────────────────────────────────
-// Every endpoint returns { success, message, data, timestamp }.
-// We unwrap to `res.data.data` so callers receive the actual payload directly.
-apiClient.interceptors.response.use(
-  (res) => {
-    const envelope = res.data
-    // If the backend signals failure inside a 2xx (shouldn't happen, but guard it)
-    if (envelope && envelope.success === false) {
-      return Promise.reject(new Error(envelope.message || 'Server returned an error'))
-    }
-    // Return the inner data payload
-    return envelope?.data ?? envelope
-  },
-  (err) => {
-    // HTTP error responses — backend wraps these in ApiResponse too
-    const envelope = err.response?.data
-    const message =
-      envelope?.message ||
-      err.message ||
-      'An unexpected error occurred'
-    return Promise.reject(new Error(message))
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  let res
+  try {
+    res = await fetch(BASE_URL + path, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+    })
+  } catch (err) {
+    throw new Error(err.name === 'AbortError' ? 'The server took too long to respond.' : 'Network Error')
+  } finally {
+    clearTimeout(timer)
   }
-)
 
-// ── Retry helper ──────────────────────────────────────────────────────────────
-// Exponential backoff: attempt 0 → immediate, 1 → 500ms, 2 → 1000ms
-// Never retries 4xx — those are caller/validation errors, not transient faults.
+  const json = await res.json().catch(() => null)
+  if (!res.ok || json?.success === false) {
+    const err = new Error(json?.message || json?.error || `Request failed (${res.status})`)
+    err.status = res.status
+    throw err
+  }
+  return json && 'data' in json && 'success' in json ? json.data : json
+}
+
+// Retries network/5xx failures with backoff (0.5s, 1s); never retries 4xx.
 async function withRetry(fn, retries = 2, delayMs = 500) {
-  let lastError
-  for (let attempt = 0; attempt <= retries; attempt++) {
+  for (let attempt = 0; ; attempt++) {
     try {
       return await fn()
     } catch (err) {
-      lastError = err
-      const status = err?.response?.status
-      if (status && status >= 400 && status < 500) throw err
-      if (attempt < retries) {
-        await new Promise((r) => setTimeout(r, delayMs * 2 ** attempt))
-      }
+      if (attempt >= retries || (err.status >= 400 && err.status < 500)) throw err
+      await new Promise((r) => setTimeout(r, delayMs * 2 ** attempt))
     }
   }
-  throw lastError
 }
 
 // ── Item field normaliser ─────────────────────────────────────────────────────
 // Backend ItemDto uses `title`; the frontend (SideCard, GamePage) expects `name`.
-// Normalise once here so no page component needs to know about the field rename.
 export function normaliseItem(item) {
   if (!item) return null
   return {
     ...item,
-    name: item.title ?? item.name ?? '',   // prefer title, fall back to name
+    name: item.title ?? item.name ?? '',
     imageUrl: smallerImage(item.imageUrl),
   }
 }
@@ -93,47 +75,41 @@ function smallerImage(url) {
   return url
 }
 
-// ── Game Service ──────────────────────────────────────────────────────────────
-
 export const gameService = {
-  /**
-   * Start a new game session.
-   * POST /api/game/start
-   * body: { playerName? }
-   * → GameRoundDto: { sessionId, knownItem, challengeItem, currentScore }
-   */
-  startSession: (playerName) =>
-    apiClient.post('/game/start', playerName ? { playerName } : {}),
-  /**
-   * Submit a guess for the current challenge item.
-   * POST /api/game/guess
-   * body: { sessionId, challengeItemId, guess: "HIGHER" | "LOWER" }
-   * → GuessResultDto: { correct, score, revealedChallengeItem, nextRound, message, gameOver }
-   */
+  // → { sessionId, knownItem, challengeItem, currentScore }
+  startSession: () =>
+    request('POST', '/game/start', { guestToken: readPlayer().guestToken }),
+
+  // → { correct, score, revealedChallengeItem, nextRound, message, gameOver }
   submitGuess: (sessionId, challengeItemId, direction) =>
-    apiClient.post('/game/guess', {
+    request('POST', '/game/guess', {
       sessionId,
       challengeItemId,
-      // Backend enum: HIGHER | LOWER (uppercase required — Spring @NotNull GuessType)
-      guess: direction.toUpperCase(),
+      guess: direction.toUpperCase(), // backend enum HIGHER | LOWER
     }),
 }
 
-// ── Leaderboard Service ───────────────────────────────────────────────────────
-
 export const leaderboardService = {
-  /**
-   * Fetch the top-N leaderboard.
-   * GET /api/leaderboard?limit=10
-   * → LeaderboardDto: { entries: [...], totalEntries, generatedAt }
-   *
-   * NOTE: score submission is handled automatically server-side on game over.
-   * There is no POST /api/leaderboard endpoint.
-   */
-  getTop: (limit = 10) =>
-    withRetry(() => apiClient.get('/leaderboard', { params: { limit } })),
+  // → { entries: [{ rank, playerName, score, achievedAt }], totalEntries, generatedAt }
+  getTop: (limit = 10) => withRetry(() => request('GET', `/leaderboard?limit=${limit}`)),
+}
+
+export const playerService = {
+  // Claims a unique name for this device/account; 409 if someone else has it.
+  // With sessionId, that game's leaderboard entry is renamed too. → { name }
+  claimName: (name, sessionId) =>
+    request('POST', '/players/name', { name, guestToken: readPlayer().guestToken, sessionId }),
+}
+
+export const authService = {
+  // All → { token, email, displayName, playerName }
+  login:    (email, password) =>
+    request('POST', '/auth/login', { email, password, guestToken: readPlayer().guestToken }),
+  register: (email, password) =>
+    request('POST', '/auth/register', { email, password, guestToken: readPlayer().guestToken }),
+  google:   (idToken) =>
+    request('POST', '/auth/google', { idToken, guestToken: readPlayer().guestToken }),
 }
 
 // Wake a sleeping backend as soon as the app loads; errors are irrelevant here.
-export const warmUp = () =>
-  apiClient.get('/leaderboard', { params: { limit: 1 } }).catch(() => {})
+export const warmUp = () => request('GET', '/leaderboard?limit=1').catch(() => {})

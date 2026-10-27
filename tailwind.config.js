@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+const easeOut = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+const spring  = 'cubic-bezier(0.34, 1.56, 0.64, 1)' // overshoot, feels like a spring
+
 export default {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
@@ -10,49 +13,67 @@ export default {
         'game-blue': '#00C2FF',
         'game-dark': '#050A0F',
         'game-darker': '#020508',
-        'game-surface': 'rgba(255,255,255,0.04)',
-        'game-border': 'rgba(255,255,255,0.08)',
       },
       fontFamily: {
         display: ['Bebas Neue', 'Impact', 'sans-serif'],
         body: ['DM Sans', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
-      backgroundImage: {
-        'glow-green': 'radial-gradient(ellipse at center, rgba(0,255,135,0.15) 0%, transparent 70%)',
-        'glow-red': 'radial-gradient(ellipse at center, rgba(255,60,60,0.15) 0%, transparent 70%)',
-        'glow-gold': 'radial-gradient(ellipse at center, rgba(255,215,0,0.12) 0%, transparent 70%)',
-      },
+      // All animations touch only transform/opacity so phones run them on the GPU.
+      // `both` fill keeps the start frame during animation-delay (for staggers).
       animation: {
-        'float': 'float 6s ease-in-out infinite',
-        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
-        'spin-slow': 'spin 8s linear infinite',
-        'particle': 'particle 8s linear infinite',
-        'shimmer': 'shimmer 3s linear infinite',
-        'score-pop': 'scorePop 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97)',
+        // opacity only: a lingering transform would make the page the containing block
+        // for position:fixed children (the navbar would scroll away)
+        'page':           `fadeIn 0.4s ${easeOut} both`,
+        'fade-in':        `fadeIn 0.4s ${easeOut} both`,
+        'fade-in-up':     `fadeInUp 0.6s ${easeOut} both`,
+        'pop':            `pop 0.5s ${spring} both`,
+        'slide-in-right': `slideInRight 0.5s ${easeOut} both`,
+        'shake':          'shake 0.5s ease-in-out',
+        'score-bump':     'scoreBump 0.4s ease-out',
+        'score-float':    'scoreFloat 0.8s ease-out forwards', // = the pause before the next round
+        'wiggle':         'wiggle 4s ease-in-out infinite',
+        'spin-6':         'spin 6s linear infinite',
       },
       keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-20px)' },
+        fadeIn: {
+          from: { opacity: '0' },
+          to:   { opacity: '1' },
         },
-        pulseGlow: {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(0,255,135,0.3)' },
-          '50%': { boxShadow: '0 0 60px rgba(0,255,135,0.8), 0 0 100px rgba(0,255,135,0.4)' },
+        fadeInUp: {
+          from: { opacity: '0', transform: 'translateY(24px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
         },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
+        pop: {
+          from: { opacity: '0', transform: 'scale(0.6)' },
+          to:   { opacity: '1', transform: 'scale(1)' },
         },
-        scorePop: {
-          '0%': { transform: 'scale(1)' },
-          '30%': { transform: 'scale(1.4)' },
-          '60%': { transform: 'scale(0.9)' },
-          '100%': { transform: 'scale(1)' },
+        slideInRight: {
+          from: { opacity: '0', transform: 'translateX(100%)' },
+          to:   { opacity: '1', transform: 'translateX(0)' },
         },
-      },
-      backdropBlur: {
-        xs: '2px',
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '15%, 45%': { transform: 'translateX(-8px)' },
+          '30%, 60%': { transform: 'translateX(8px)' },
+          '75%':      { transform: 'translateX(-4px)' },
+          '90%':      { transform: 'translateX(4px)' },
+        },
+        scoreBump: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '40%':      { transform: 'scale(1.4)' },
+        },
+        // includes translateX(-50%) because the popup is centred with a transform
+        scoreFloat: {
+          '0%':   { opacity: '1', transform: 'translate(-50%, 0) scale(0.5)' },
+          '40%':  { opacity: '1', transform: 'translate(-50%, -50px) scale(1.5)' },
+          '100%': { opacity: '0', transform: 'translate(-50%, -120px) scale(1.2)' },
+        },
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '33%':      { transform: 'rotate(10deg)' },
+          '66%':      { transform: 'rotate(-10deg)' },
+        },
       },
     },
   },

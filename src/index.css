@@ -5,9 +5,6 @@
 @layer base {
   :root {
     --green: #00FF87;
-    --red: #FF3C3C;
-    --gold: #FFD700;
-    --blue: #00C2FF;
     --dark: #050A0F;
     --darker: #020508;
   }

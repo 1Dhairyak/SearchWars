@@ -1,7 +1,5 @@
-import { motion } from 'framer-motion'
-
-// FIX COMP-01: Extracted from GamePage — now independently testable and reusable.
-// FIX A11Y-02: aria-label reads "Guess higher/lower" not the triangle symbol.
+// aria-label reads "Guess higher/lower", not the triangle symbol.
+// Hover/tap scale is a CSS transform; the glow is static (animating box-shadow repaints every frame).
 export default function GuessButton({
   label,
   icon,
@@ -11,14 +9,12 @@ export default function GuessButton({
   disabled = false,
 }) {
   return (
-    <motion.button
+    <button
       onClick={onClick}
       disabled={disabled}
-      whileHover={disabled ? {} : { scale: 1.04, boxShadow: `0 0 30px ${glowColor}` }}
-      whileTap={disabled ? {} : { scale: 0.96 }}
       aria-label={`Guess ${label.toLowerCase()}`}
       aria-disabled={disabled}
-      className="w-full py-3.5 px-4 sm:px-6 rounded-full font-body font-bold text-base tracking-widest uppercase flex items-center justify-center gap-3 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-game-darker"
+      className={`w-full py-3.5 px-4 sm:px-6 rounded-full font-body font-bold text-base tracking-widest uppercase flex items-center justify-center gap-3 transition-[transform,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-game-darker ${disabled ? '' : 'hover:scale-[1.04] active:scale-[0.96]'}`}
       style={{
         background: 'rgba(255,255,255,0.06)',
         border: `2px solid ${color}`,
@@ -31,6 +27,6 @@ export default function GuessButton({
     >
       <span aria-hidden="true">{icon}</span>
       {label}
-    </motion.button>
+    </button>
   )
 }

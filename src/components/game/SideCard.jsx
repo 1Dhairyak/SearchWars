@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { formatSearchVolume } from '../../services/formatters'
 import GuessButton from './GuessButton'
 
@@ -107,11 +106,8 @@ export default function SideCard({
 
         {/* Revealed search volume */}
         {showVolume ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 14 }}
-            className="flex flex-col items-center gap-2"
+          <div
+            className="flex flex-col items-center gap-2 animate-pop"
             aria-live="polite"
             aria-label={`${formatSearchVolume(item.searchVolume)} average monthly searches`}
           >
@@ -130,7 +126,7 @@ export default function SideCard({
             <span className="text-white/50 text-xs sm:text-sm font-mono tracking-wider uppercase">
               avg. monthly searches
             </span>
-          </motion.div>
+          </div>
         ) : (
           /* Interactive state — guess buttons */
           <div className="flex flex-col items-center gap-3 sm:gap-5 w-full">
