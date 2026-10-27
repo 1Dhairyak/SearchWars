@@ -1,4 +1,4 @@
-import { formatSearchVolume } from '../../services/formatters'
+import { formatViews } from '../../services/formatters'
 import GuessButton from './GuessButton'
 
 // FIX BUG-02 + COMP-01: This is the canonical SideCard implementation.
@@ -104,12 +104,12 @@ export default function SideCard({
 
         <p className="text-white/60 text-base sm:text-lg font-body">has</p>
 
-        {/* Revealed search volume */}
+        {/* Revealed monthly views */}
         {showVolume ? (
           <div
             className="flex flex-col items-center gap-2 animate-pop"
             aria-live="polite"
-            aria-label={`${formatSearchVolume(item.searchVolume)} average monthly searches`}
+            aria-label={`${formatViews(item.monthlyViews)} Wikipedia views last month`}
           >
             <span
               className="font-display leading-none"
@@ -121,10 +121,10 @@ export default function SideCard({
                   : '0 0 40px rgba(255,60,60,0.9), 0 0 80px rgba(255,60,60,0.4)',
               }}
             >
-              {formatSearchVolume(item.searchVolume)}
+              {formatViews(item.monthlyViews)}
             </span>
             <span className="text-white/50 text-xs sm:text-sm font-mono tracking-wider uppercase">
-              avg. monthly searches
+              Wikipedia views last month
             </span>
           </div>
         ) : (
@@ -136,7 +136,7 @@ export default function SideCard({
             />
             {compareItemName && (
               <p className="text-white/40 text-sm font-body tracking-wide">
-                searches than{' '}
+                views than{' '}
                 <span className="text-white/70 font-semibold">{compareItemName}</span>
               </p>
             )}

@@ -1,7 +1,7 @@
 // ─── Pure formatting utilities ────────────────────────────────────────────────
 // FIX ARCH-02: Separated from mockData.js — these are stateless, testable helpers.
 
-export function formatSearchVolume(vol) {
+export function formatViews(vol) {
   if (vol >= 1_000_000) return `${(vol / 1_000_000).toFixed(1)}M`
   if (vol >= 1_000) return `${Math.round(vol / 1_000)}K`
   return vol.toLocaleString()

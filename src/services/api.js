@@ -57,6 +57,7 @@ export function normaliseItem(item) {
   return {
     ...item,
     name: item.title ?? item.name ?? '',
+    monthlyViews: item.monthlyViews ?? item.searchVolume, // ponytail: drop the searchVolume fallback once the backend rename is live
     imageUrl: smallerImage(item.imageUrl),
   }
 }

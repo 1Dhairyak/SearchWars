@@ -7,8 +7,8 @@ import Navbar from '../components/ui/Navbar'
 const features = [
   {
     color: '#00FF87',
-    title: 'Global Search Data',
-    desc: 'Compare real search volumes from across the internet. No guessing - pure data.',
+    title: 'Real Wikipedia Data',
+    desc: "Every number is last month's real English Wikipedia page views, refreshed automatically. No made-up stats.",
   },
   {
     color: '#FFD700',
@@ -41,11 +41,11 @@ export default function LandingPage() {
         <div className="w-full flex flex-col items-center animate-fade-in-up">
           <div className="mt-6">
             <p className="text-xl md:text-2xl font-body font-semibold text-white">
-              What gets Googled more?{' '}
-              <span style={{ color: '#00FF87' }}>Fresh Global Data.</span>
+              What gets more Wikipedia views?{' '}
+              <span style={{ color: '#00FF87' }}>Real Data.</span>
             </p>
             <p className="mt-3 text-white/50 text-base font-body max-w-md mx-auto leading-relaxed">
-              Duel with up-to-the-minute global search trends across 9 categories.
+              Guess which gets more monthly page views, across 8 categories.
             </p>
           </div>
 
@@ -116,8 +116,11 @@ export default function LandingPage() {
 
         <footer className="border-t border-white/5 py-8 px-4 text-center">
           <p className="text-white/25 text-xs font-mono tracking-widest">
-            SEARCHWARS · GLOBAL SEARCH TRENDS · BUILT WITH REACT + SPRING BOOT
+            SEARCHWARS · DATA: WIKIMEDIA PAGEVIEWS · BUILT WITH REACT + SPRING BOOT
           </p>
+          <Link to="/privacy" className="inline-block mt-3 text-white/40 hover:text-white/70 text-xs font-mono tracking-widest underline">
+            PRIVACY
+          </Link>
         </footer>
       </div>
     </div>

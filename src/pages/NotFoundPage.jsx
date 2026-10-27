@@ -34,7 +34,7 @@ export default function NotFoundPage() {
             PAGE NOT FOUND
           </h2>
           <p className="text-white/50 font-body text-base leading-relaxed mb-8 max-w-sm mx-auto">
-            Looks like this page got a lower search volume than expected.
+            Looks like this page got fewer views than expected.
             It doesn't exist — or maybe it never did.
           </p>
 
