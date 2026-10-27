@@ -36,6 +36,11 @@ export default {
         'spin-6':         'spin 6s linear infinite',
       },
       keyframes: {
+        // Duel round timer: duration is set inline from the server deadline
+        shrinkX: {
+          from: { transform: 'scaleX(1)' },
+          to:   { transform: 'scaleX(0)' },
+        },
         fadeIn: {
           from: { opacity: '0' },
           to:   { opacity: '1' },

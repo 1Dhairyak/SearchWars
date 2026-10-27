@@ -104,6 +104,19 @@ export const playerService = {
   getBest: () => withRetry(() => request('GET', '/players/best')),
 }
 
+export const duelService = {
+  // Opens a duel waiting for two players. → { duelId }
+  create: () => withRetry(() => request('POST', '/duels')),
+}
+
+// The duel WebSocket lives next to the REST API: https://host/api → wss://host/ws/duel
+export function duelSocketUrl() {
+  const api = new URL(BASE_URL, window.location.origin)
+  api.protocol = api.protocol === 'https:' ? 'wss:' : 'ws:'
+  api.pathname = api.pathname.replace(/\/api\/?$/, '') + '/ws/duel'
+  return api.toString()
+}
+
 export const authService = {
   // All → { token, email, displayName, playerName }
   login:    (email, password) =>

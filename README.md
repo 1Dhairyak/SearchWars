@@ -4,6 +4,7 @@
 [![Live](https://img.shields.io/badge/play-search--wars.vercel.app-00FF87)](https://search-wars.vercel.app)
 
 > **Which got more Wikipedia views last month?** Two things, one guess. One wrong answer ends your streak.
+> Play solo, or send a friend a link and duel live, 1v1.
 
 ![SearchWars gameplay](docs/demo.gif)
 
@@ -16,6 +17,7 @@ Wikimedia Pageviews API. 100 items across 8 categories — tech, sport, music, g
 flowchart LR
     U[Browser] -->|React SPA| V[Vercel]
     U -->|REST + JWT| R[Spring Boot API on Render]
+    U <-->|WebSocket: live 1v1| R
     R --> N[(PostgreSQL on Neon)]
     R -->|nightly| W[Wikimedia Pageviews API]
     U -.->|Sign in with Google| G[Google Identity]
@@ -27,6 +29,9 @@ The backend — game logic, data pipeline, migrations, auth — lives in
 ## Frontend highlights
 
 - **No cheating from the client.** The hidden number isn't in the page until the server has judged your guess.
+- **Real-time 1v1.** `/duel` creates a room and an invite link (native share sheet on phones). Both players
+  race through the same items with live scores, a 15-second timer per guess, automatic reconnects and a one-tap
+  rematch. [`useDuel`](src/hooks/useDuel.js) uses the browser's built-in WebSocket, with no client library.
 - **Play first, sign up never (or later).** A random guest token identifies your device; claim a unique player name,
   or sign in with Google / email to keep your name and best score across devices.
 - **Fast on cheap phones.** All animation is CSS (no animation library), images are requested at phone-friendly sizes
@@ -62,9 +67,9 @@ headers). Set `VITE_API_BASE_URL` and `VITE_GOOGLE_CLIENT_ID` in Vercel's enviro
 
 ```
 src/
-  pages/        Landing, Game, GameOver, Leaderboard, Privacy, NotFound
+  pages/        Landing, Game, GameOver, Leaderboard, Duel (1v1), Privacy, NotFound
   components/   game/ (SideCard, VSCircle, GuessButton, ScorePopup), ui/ (Navbar, LoginModal, Logo, SoundToggle, StarfieldBg)
-  hooks/        useGame — game loop against the API
+  hooks/        useGame — solo game loop; useDuel — live 1v1 over WebSocket
   context/      GameContext — best score (synced from your account), player name, guest token, login
   services/     api, sounds, formatters, imagePreloader
 ```

@@ -7,6 +7,7 @@ import LoginModal from './LoginModal'
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/game', label: 'Play' },
+  { to: '/duel', label: '1v1' },
   { to: '/leaderboard', label: 'Leaderboard' },
 ]
 
