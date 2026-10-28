@@ -42,14 +42,15 @@ export default function GamePage() {
     return () => clearTimeout(t)
   }, [phase, score, highScore, sessionId, navigate])
 
-  // Slow first load = backend waking from sleep (Render free tier)
-  const [slowLoad, setSlowLoad] = useState(false)
+  // Slow first load = backend waking from sleep (Render free tier): count the seconds
+  const [waitedS, setWaitedS] = useState(0)
   useEffect(() => {
-    setSlowLoad(false)
+    setWaitedS(0)
     if (phase !== 'loading') return
-    const t = setTimeout(() => setSlowLoad(true), 3000)
-    return () => clearTimeout(t)
+    const t = setInterval(() => setWaitedS((s) => s + 1), 1000)
+    return () => clearInterval(t)
   }, [phase])
+  const slowLoad = waitedS >= 3
 
   // Error — could not reach backend (checked first: on error there are no items)
   if (error) {
@@ -84,11 +85,11 @@ export default function GamePage() {
             }}
           />
           <p className="text-white/40 font-mono text-sm tracking-widest uppercase">
-            {slowLoad ? 'Waking up server…' : 'Loading game…'}
+            {slowLoad ? `Waking up server… ${waitedS}s` : 'Loading game…'}
           </p>
           {slowLoad && (
             <p className="text-white/30 font-body text-xs max-w-xs">
-              First load after a while can take up to a minute.
+              The server sleeps when nobody's playing. Waking it can take 2–3 minutes — hang tight, the game starts on its own.
             </p>
           )}
         </div>

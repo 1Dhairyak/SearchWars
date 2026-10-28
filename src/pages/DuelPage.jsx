@@ -58,7 +58,7 @@ function CreateDuel() {
       <button onClick={create} disabled={busy} className={primaryBtn} style={primaryStyle}>
         {busy ? 'Creating…' : '⚔️ Challenge a friend'}
       </button>
-      {busy && <p className="text-white/30 text-xs font-body">First request after a while can take up to a minute.</p>}
+      {busy && <p className="text-white/30 text-xs font-body">If the server was asleep, waking it can take 2–3 minutes.</p>}
       {error && <p className="text-game-red font-body text-sm">{error}</p>}
     </Screen>
   )

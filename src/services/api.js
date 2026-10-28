@@ -6,9 +6,44 @@
 import { readPlayer } from '../context/GameContext'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
-const TIMEOUT_MS = 60_000 // Render free tier cold start can take ~30-60s
+const TIMEOUT_MS = 60_000
+const WAKE_PATIENCE_MS = 4 * 60_000 // Render's free plan sleeps when idle; a cold boot takes ~2–3 min
+
+// Resolves once the backend has answered. Every call waits on it, so the first visitor after a
+// sleep sees "waking up" instead of a timeout error; once awake it costs nothing.
+let awake = null
+
+export function wakeBackend() {
+  awake ??= (async () => {
+    const giveUpAt = Date.now() + WAKE_PATIENCE_MS
+    for (;;) {
+      try {
+        await send('GET', '/leaderboard?limit=1')
+        return
+      } catch (err) {
+        if (err.status >= 400 && err.status < 500) return // it answered: awake
+        if (Date.now() > giveUpAt) {
+          awake = null
+          throw new Error('The server is taking too long to start. Please try again in a minute.')
+        }
+        await new Promise((r) => setTimeout(r, 3000))
+      }
+    }
+  })()
+  return awake
+}
 
 async function request(method, path, body) {
+  await wakeBackend()
+  try {
+    return await send(method, path, body)
+  } catch (err) {
+    if (!err.status || err.status >= 502) awake = null // it may have gone back to sleep: wait again next time
+    throw err
+  }
+}
+
+async function send(method, path, body) {
   const headers = { 'Content-Type': 'application/json' }
   const { authToken } = readPlayer()
   if (authToken) headers.Authorization = `Bearer ${authToken}`
@@ -127,5 +162,5 @@ export const authService = {
     request('POST', '/auth/google', { idToken, guestToken: readPlayer().guestToken }),
 }
 
-// Wake a sleeping backend as soon as the app loads; errors are irrelevant here.
-export const warmUp = () => request('GET', '/leaderboard?limit=1').catch(() => {})
+// Start waking a sleeping backend as soon as the app loads.
+export const warmUp = () => wakeBackend().catch(() => {})
